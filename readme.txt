@@ -73,7 +73,7 @@
             [ taps.csv ] -> CSVTapReader -> ITapSink : TripProcessor -> ITripSink : CSVTripWriter -> [ trips.csv ]
 
 
-        I use interfaces to seperate concerns, so that eg. CSV processing is isolated from trip cost and tap/trip processing
+        Interfaces seperate concerns, so that eg. CSV processing is isolated from trip cost and tap/trip processing
 
             see ./src/types.ts
 
@@ -119,34 +119,35 @@
 
     Sample run debug logging : 
 
-        Tap    : 1001 3003 I.3
-        Tap    : 1002 3003 O.2
-        Trip   :      3003     I.3 -> O.2 : $ 5.50 : completed trip
-        Tap    : 1002 3003 I.2
-        Tap    : 1003 3003 O.1
-        Trip   :      3003     I.2 -> O.1 : $ 3.25 : completed trip
-        Tap    : 1005 3003 I.1
-        Tap    : 1007 2002 I.1
-        Tap    : 1008 2002 O.2
-        Trip   :      2002     I.1 -> O.2 : $ 3.25 : completed trip
-        Tap    : 1010 9111 O.3
-        Trip   :      9111     O.3 -> O.3 : $ 7.30 : missing tap ON
-        Tap    : 1020 9113 I.3
-        Tap    : 1025 9113 O.3
-        Trip   :      9113     I.3 -> O.3 : $ 0.00 : cancelled trip
-        Tap    : 1029 9113 O.2
-        Trip   :      9113     O.2 -> O.2 : $ 5.50 : missing tap ON
-        Tap    : 1020 9111 I.3
-        Tap    : 1025 9111 I.2
-        Trip   :      9111     I.3 -> I.2 : $ 7.30 : missing tap OFF
-        Tap    : 1030 9222 I.3
-        Tap    : 1032 9222 O.1
-        Trip   :      9222     I.3 -> O.1 : $ 7.30 : completed trip
-        Tap    : 1040 9333 O.3
-        Trip   :      9333     O.3 -> O.3 : $ 7.30 : missing tap ON
-        end-of-day : process unfinished trips : 2
-        Tap    : 1025 9111 I.2
-        Trip   :      9111     I.2 -> I.2 : $ 5.50 : missing tap OFF
-        Tap    : 1005 3003 I.1
-        Trip   :      3003     I.1 -> I.1 : $ 7.30 : missing tap OFF
-
+        trip processor :
+        tap : 1001 3003 I 3
+        tap : 1002 3003 O 2
+        Trip       3003     I.3 -> O.2 : $ 5.50 : completed trip
+        tap : 1002 3003 I 2
+        tap : 1003 3003 O 1
+        Trip       3003     I.2 -> O.1 : $ 3.25 : completed trip
+        tap : 1005 3003 I 1
+        tap : 1007 2002 I 1
+        tap : 1008 2002 O 2
+        Trip       2002     I.1 -> O.2 : $ 3.25 : completed trip
+        tap : 1010 9111 O 3
+        Trip       9111     O.3 -> O.3 : $ 7.30 : missing tap ON
+        tap : 1020 9113 I 3
+        tap : 1025 9113 O 3
+        Trip       9113     I.3 -> O.3 : $ 0.00 : cancelled trip
+        tap : 1029 9113 O 2
+        Trip       9113     O.2 -> O.2 : $ 5.50 : missing tap ON
+        tap : 1020 9111 I 3
+        tap : 1025 9111 I 2
+        Trip       9111     I.3 -> I.2 : $ 7.30 : missing tap OFF
+        tap : 1030 9222 I 3
+        tap : 1032 9222 O 1
+        Trip       9222     I.3 -> O.1 : $ 7.30 : completed trip
+        tap : 1040 9333 O 3
+        Trip       9333     O.3 -> O.3 : $ 7.30 : missing tap ON
+        remaining : 2
+        tap : 1005 3003 I 1
+        Trip       3003     I.1 -> I.1 : $ 7.30 : missing tap OFF
+        tap : 1025 9111 I 2
+        Trip       9111     I.2 -> I.2 : $ 5.50 : missing tap OFF
+        processed : 16 taps  ->  10 trips
