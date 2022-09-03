@@ -183,6 +183,7 @@ export class TripProcessor implements ITapSink
             _.emit_trip(tap,tap,cost,"missing tap OFF");
         }
         _.last_taps.clear();
+        _.writer.done();
     }
 
     // ITapSink impl
