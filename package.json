@@ -1,0 +1,21 @@
+{
+  "name": "taptrip_ts",
+  "version": "1.0.0",
+  "description": "readme.txt",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "tsc && node dist/app.js",
+    "test": "tsc && node dist/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^18.7.14",
+    "assert-ts": "^0.3.4",
+    "csv": "^6.2.0",
+    "typed-assert": "^1.0.9"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.2"
+  }
+}
