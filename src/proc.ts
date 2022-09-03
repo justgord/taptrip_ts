@@ -57,6 +57,7 @@ export class FixedTripCosts implements ITripCosts
 export class TripProcessor implements ITapSink
 {
     private ntaps:number = 0;       
+    private ntrips:number = 0;       
 
     private costs:ITripCosts;
     private writer:ITripSink;
@@ -73,43 +74,34 @@ export class TripProcessor implements ITapSink
         this.last_taps = new Map<String, Tap>();
     }
 
-    stor(tap:Tap)
+    private stor(tap:Tap)
     {
         this.last_taps.set(tap.id,tap);
     }
     
-    clear(tap:Tap)
+    private clear(tap:Tap)
     {
         this.last_taps.delete(tap.id);
     }
 
-    emit_trip(lst:Tap, cur:Tap, cost:number, note:string)
+    private emit_trip(lst:Tap, cur:Tap, cost:number, note:string)
     {
         lerr("Trip       "+cur.id+"     "+lst.tap+"."+lst.stop+" -> "+cur.tap+"."+cur.stop+" : $ "+cost.toFixed(2)+" : "+note);
 
         let trip:Trip = {id:cur.id,tap_on:lst,tap_off:cur,cost:cost, note:note };
 
+        this.ntrips++;
+
         this.writer.send(trip);
     }
 
-
-    check_trip(lst:Tap, cur:Tap)
+    private check_trip(lst:Tap, cur:Tap)
     {
         const _=this;
-    
-        function stor()
-        {
-            _.last_taps.set(cur.id,cur);
-        }
-
-        function clear()
-        {
-            _.last_taps.delete(cur.id);
-        }
 
         function tap_on()
         {
-            stor();
+            _.stor(cur);
         }
 
         function trip_complete()
@@ -117,27 +109,27 @@ export class TripProcessor implements ITapSink
             if (lst.stop == cur.stop)
             {
                 lerr("Trip       "+cur.id+"     "+lst.tap+"."+lst.stop+" -> "+cur.tap+"."+cur.stop+" : $ 0.00 : cancelled trip");
-                clear();
+                _.clear(cur);
                 return;
             }
 
             let cost = _.costs.trip(lst.stop,cur.stop);
             _.emit_trip(lst,cur,cost,"completed trip");
-            clear();
+            _.clear(cur);
         }
 
         function trip_missing_tap_on()
         {
             let cost = _.costs.max(cur.stop);
             _.emit_trip(cur,cur,cost,"missing tap ON");
-            clear();
+            _.clear(cur);
         }
 
         function trip_missing_tap_off()
         {
             let cost = _.costs.max(lst.stop);
             _.emit_trip(lst,cur,cost,"missing tap OFF");
-            stor();
+            _.stor(cur);
         }
 
         //    -   ON    : tap_on
@@ -177,6 +169,22 @@ export class TripProcessor implements ITapSink
         //lerr("    : max cost : "+this.costs.max(tap.stop));
     }
 
+    private check_remaining()
+    {
+        // close any active trips, assuming they forgot to tap off
+
+        const _=this;
+        lerr("remaining : "+_.last_taps.size);
+
+        for (let [id, tap] of _.last_taps)
+        {
+            lerr("tap : "+[tap.ts, tap.id, tap.tap, tap.stop].join(" "));
+            let cost = _.costs.max(tap.stop);
+            _.emit_trip(tap,tap,cost,"missing tap OFF");
+        }
+        _.last_taps.clear();
+    }
+
     // ITapSink impl
     
     send(tap:Tap)
@@ -192,20 +200,9 @@ export class TripProcessor implements ITapSink
         
     done()
     {
-        const _=this;
+        this.check_remaining();
 
-        lerr("processed : "+_.ntaps+" taps");
-        lerr();
-
-        // close any active trips, assuming they forgot to tap off
-
-        lerr("remaining : "+_.last_taps.size);
-
-        for (let [id, tap] of _.last_taps)
-        {
-            lerr("tap : "+[tap.ts, tap.id, tap.tap, tap.stop].join(" "));
-            let cost = _.costs.max(tap.stop);
-            _.emit_trip(tap,tap,cost,"missing tap OFF");
-        }
+        lerr("processed : "+this.ntaps+" taps  ->  "+this.ntrips+" trips");
     }
+
 }
